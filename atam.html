@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Interaktif Atatürk İlke ve İnkılapları Panosu - Can AKALIN tarafından yapılmıştır.</title>
+<style>
+:root{ --fg:#eaf0f7; --bg:#0b1220; --card:#0f172a; --muted:#9aa4b2; --line:#1f2937; --chip:#0b1326; --accent:#7aa2ff; }
+:root[data-theme="light"]{ --fg:#0e1726; --bg:#f6f7fb; --card:#ffffff; --muted:#445065; --line:#e5e7ef; --chip:#f3f4ff; --accent:#1f3af5; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans",sans-serif}
+.wrap{min-height:100%;display:grid;place-items:center;padding:clamp(10px,2vw,24px)}
+.card{
+  width:100%;max-width:1200px;background:var(--card);border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 10px 30px rgba(15,23,42,.08);
+  display:grid;grid-template-rows:auto 1fr auto;min-height:60vh;max-height:92vh;
+}
+.header{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.title{font-weight:700}
+.righthead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select,input[type="number"]{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:.4rem .6rem;min-width:72px}
+label.small{font-size:12px;color:var(--muted)}
+.counter{font-size:12px;color:var(--muted)}
+.content{
+  display:grid;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  min-height:0;overflow:hidden;
+}
+@media (min-width:1024px){ .content{grid-template-columns:1fr 1.05fr} }
+.left{padding:12px;border-right:1px solid var(--line);display:flex;align-items:center;min-width:0}
+.right{padding:clamp(14px,2.2vw,28px);display:flex;flex-direction:column;gap:14px;min-width:0;overflow:auto}
+.frame{
+  background:var(--bg); border:1px solid var(--line); border-radius:12px; width:100%;
+  display:grid; place-items:center; padding:10px; aspect-ratio:4/3;
+  height:clamp(260px, 62vh, 720px);
+}
+.img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;border-radius:8px}
+.qmain{font-size:clamp(20px,2.6vw,34px);line-height:1.28;font-weight:800;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:.5rem 1rem;color:var(--muted);font-size:clamp(12px,1.6vw,14px)}
+.chip{padding:.28rem .6rem;border:1px solid var(--line);border-radius:999px;background:var(--chip)}
+.meta a{color:var(--muted);text-decoration:underline dotted}
+
+/* Bağlam notu */
+.note{border:1px solid var(--line);background:var(--chip);border-radius:12px;padding:12px}
+.note h2{font-size:14px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.note p{font-size:14px;line-height:1.45;margin:0}
+
+/* Kronoloji şeridi (inkılap yılına göre) */
+.timeline{display:grid;gap:8px}
+.tbar{position:relative;height:8px;background:linear-gradient(90deg,var(--line),color-mix(in oklab,var(--line),var(--accent) 25%));border-radius:999px}
+.tbar .pin{position:absolute;top:-6px;translate:-50% 0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:12px solid var(--accent)}
+.tlabels{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.tlabels span{min-width:3ch;text-align:center}
+
+/* İnkılap tek kart */
+.reformCard{border:1px solid var(--line);background:var(--chip);border-radius:12px;padding:12px;display:grid;gap:6px}
+.reformTitle{font-weight:800}
+.reformMeta{font-size:12px;color:var(--muted)}
+.reformCard a{font-size:12px;color:var(--muted);text-decoration:underline dotted;margin-left:6px}
+
+/* Kontroller */
+.controls{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:center;padding:12px 16px}
+button,.toggle{border:1px solid var(--line);background:var(--chip);color:var(--fg);padding:.6rem 1rem;border-radius:.6rem;cursor:pointer;transition:transform .05s,background .2s}
+button:hover,.toggle:hover{background:color-mix(in oklab,var(--chip),var(--accent) 12%)} button:active{transform:translateY(1px)}
+.toggle input{display:none} .toggle span{min-width:7ch;text-align:center;display:inline-block}
+.pill{padding:.35rem .7rem;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" aria-live="polite">
+    <div class="header">
+      <div class="title">İnteraktif Atatürk İlke ve İnkılapları Panosu - Can AKALIN tarafından yapılmıştır.</div>
+      <div class="righthead">
+        <label class="small">Tema</label>
+        <select id="themeSel" aria-label="Tema">
+          <option value="dark" selected>Koyu</option><option value="light">Açık</option>
+        </select>
+        <label class="small">Süre (sn)</label>
+        <input id="secInput" type="number" min="3" max="120" step="1" value="15"/>
+        <div class="counter" id="counter">1/30+</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="left">
+        <div class="frame"><img id="photo" class="img" alt="Mustafa Kemal Atatürk portre" referrerpolicy="no-referrer"/></div>
+      </div>
+
+      <div class="right">
+        <h1 class="qmain" id="qtext">Yükleniyor…</h1>
+        <div class="meta">
+          <span class="chip" id="when">—</span>
+          <span class="chip" id="where">—</span>
+          <span class="chip" id="context">—</span>
+          <span>· <a id="source" href="#" target="_blank" rel="noopener">Resmî kaynak</a></span>
+        </div>
+
+        <div class="note" id="noteWrap">
+          <h2>Bağlam açıklaması</h2>
+          <p id="note">Sözün kısa bağlamı burada gösterilir.</p>
+        </div>
+
+        <div class="timeline">
+          <div class="tbar"><div class="pin" id="pin" style="left:0%"></div></div>
+          <div class="tlabels"><span id="tStart">1919</span><span>1923</span><span>1927</span><span>1931</span><span>1933</span><span id="tEnd">1938</span></div>
+        </div>
+
+        <div class="reformCard" id="reformCard">
+          <div class="reformTitle" id="refTitle">İnkılap başlığı</div>
+          <div class="reformMeta"><span id="refYear">1924</span> · <a id="refLink" href="#" target="_blank" rel="noopener">Resmî kaynak</a></div>
+          <div id="refText">Kısa açıklama.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="prevBtn" title="Önceki (←)">Önceki</button>
+      <button id="shuffleBtn" title="Rastgele (R)">Rastgele</button>
+      <button id="nextBtn" title="Sonraki (→)">Sonraki</button>
+      <label class="toggle" title="Otomatik döngü (O)"><input type="checkbox" id="autoChk"/><span>Oto: Açık</span></label>
+      <button id="fsBtn" title="Tam ekran (F)">Tam ekran</button>
+      <span class="pill" id="statusPill">Süre: 15 sn</span>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== Sözler: 30+ (resmî kaynaklar) ===== */
+const quotes=[
+ {text:"Gençliğe Hitabe: “Ey Türk gençliği! Birinci vazifen; Türk istiklâlini, Türk Cumhuriyetini, ilelebet, muhafaza ve müdafaa etmektir.”",when:"20 Ekim 1927",where:"Ankara",context:"Nutuk sonu",url:"https://tdk.gov.tr/genel/ataturkun-genclige-hitabesi/",note:"Nutuk 15–20 Ekim 1927’de okunmuştur."},
+ {text:"“Ne mutlu Türk’üm diyene!”",when:"29 Ekim 1933",where:"Ankara",context:"10. Yıl Nutku",url:"https://atam.gov.tr/ataturk-hakkinda/soylev-ve-demecleri/10-yil-nutku-29-ekim-1933",note:"Cumhuriyet’in 10. yılı tören konuşması."},
+ {text:"“Milletin bağımsızlığını yine milletin azim ve kararı kurtaracaktır.”",when:"22 Haziran 1919",where:"Amasya",context:"Amasya Genelgesi",url:"https://atam.gov.tr/ataturk-hakkinda/vesikalar/amasya-genelgesi-22-haziran-1919",note:"Ulusal direnişin ilk temel belgesi."},
+ {text:"“Hâkimiyet kayıtsız şartsız milletindir.”",when:"23 Nisan 1920",where:"Ankara",context:"TBMM’nin açılışı",url:"https://atam.gov.tr/ataturk-hakkinda/makaleler/hakimiyet-kayitsiz-sartsiz-milletindir",note:"Meclis açılış ilkesi."},
+ {text:"“Ordular! İlk hedefiniz Akdeniz’dir. İleri!”",when:"1 Eylül 1922",where:"Dumlupınar",context:"Başkomutanlık Meydan Muharebesi emri",url:"https://atam.gov.tr/ataturk-hakkinda/soylev-ve-demecleri/1-eylul-1922-ordular-ilk-hedefiniz-akdenizdir-ileri",note:"Büyük Taarruz’un bitiş safhası."},
+ {text:"“Efendiler, yarın Cumhuriyeti ilan edeceğiz.”",when:"28 Ekim 1923",where:"Ankara, Çankaya",context:"Cumhuriyet’in ilanı öncesi",url:"https://atam.gov.tr/ataturk-hakkinda/soylev-ve-demecleri/28-ekim-1923-efendiler-yarin-cumhuriyeti-ilan-edecegiz",note:"Çankaya’da kurmaylarına söylenmiştir."},
+ {text:"“Yurtta sulh, cihanda sulh.”",when:"1931",where:"Ankara",context:"Dış politika ilkesi",url:"https://atam.gov.tr/ataturk-hakkinda/makaleler/yurtta-sulh-cihanda-sulh-ilkesinin-dogusu",note:"İç ve dış barış ilkesi."},
+ {text:"“Ben sporcunun zeki, çevik ve ahlaklısını severim.”",when:"1926",where:"Ankara",context:"Söylev ve Demeçler",url:"https://atam.gov.tr/wp-content/uploads/2024/03/Ataturkun-Soylev-ve-Demecleri-C2.pdf",note:"Beden terbiyesi ve karakter."},
+ {text:"“Sanatsız kalan bir milletin hayat damarlarından biri kopmuş olur.”",when:"1923",where:"Ankara",context:"Söylev ve Demeçler",url:"https://atam.gov.tr/wp-content/uploads/2024/03/Ataturkun-Soylev-ve-Demecleri-C2.pdf",note:"Sanatın yaşamsal rolü."},
+ {text:"“Hürriyet ve istiklâl benim karakterimdir.”",when:"1919–1921",where:"Ankara",context:"Söylev ve Demeçler",url:"https://atam.gov.tr/wp-content/uploads/2024/03/Ataturkun-Soylev-ve-Demecleri-C1.pdf",note:"Millî Mücadele dönemi."},
+ {text:"“Öğretmenler; yeni nesil sizin eseriniz olacaktır.”",when:"25 Ağustos 1924",where:"Ankara",context:"Muallimler Birliği",url:"https://atam.gov.tr/wp-content/uploads/2023/06/CUMHURIYET-DONEMI-EGITIM-POLITIKALARI-SEMPOZYUMU1.pdf",note:"Eğitimcilerin sorumluluğu."},
+ {text:"“Türk milletinin karakteri yüksektir; Türk milleti çalışkandır; Türk milleti zekidir.”",when:"29 Ekim 1933",where:"Ankara",context:"10. Yıl Nutku",url:"https://atam.gov.tr/ataturk-hakkinda/soylev-ve-demecleri/10-yil-nutku-29-ekim-1933",note:"Toplumsal nitelikler."},
+ {text:"“Türk dilinin kendi benliğine ve aslındaki güzellik ve zenginliğe kavuşması için çalışmalıyız.”",when:"1930’lar",where:"Ankara",context:"TDK",url:"https://tdk.gov.tr/ataturk-kosesi/turk-dili-dergisinde-ataturk/",note:"Dil devrimi hedefi."},
+ {text:"“Hayatta en hakiki mürşit ilimdir, fendir.”",when:"1924",where:"Ankara",context:"Eğitim konuşmaları",url:"https://atam.gov.tr/",note:"Bilimsel yöntem vurgusu."},
+ {text:"“Mekteplerimizde her şeyden evvel terbiye dersleri veririz.”",when:"1922–1924",where:"Ankara",context:"Eğitim üzerine",url:"https://atam.gov.tr/",note:"Eğitimde ahlak temeli."},
+ {text:"“Bağımsızlık, uğrunda ölmesini bilen toplumların hakkıdır.”",when:"1921–1922",where:"Ankara",context:"Millî Mücadele",url:"https://atam.gov.tr/",note:"Kurtuluş felsefesi."},
+ {text:"“Biz Türkler, bütün tarihimiz boyunca hürriyet ve istiklâle timsal olmuş bir milletiz.”",when:"1927",where:"Ankara",context:"Nutuk",url:"https://atam.gov.tr/",note:"Tarihsel bakış."},
+ {text:"“Egemenlik, kayıtsız şartsız milletindir.”",when:"1920",where:"Ankara",context:"Temel ilke",url:"https://atam.gov.tr/",note:"TBMM düsturu."},
+ {text:"“Türkiye Cumhuriyeti şeyhler, dervişler, müritler memleketi olamaz.”",when:"1925",where:"Ankara",context:"Laiklik",url:"https://atam.gov.tr/",note:"Modernleşme vurgusu."},
+ {text:"“Bir milleti özgür, bağımsız, şanlı ve yüksek yapan, o milletin kültürüdür.”",when:"1923–1930",where:"Ankara",context:"Kültür",url:"https://atam.gov.tr/",note:"Kültür temelli kalkınma."},
+ {text:"“Cumhuriyet fikir serbestliği taraftarıdır.”",when:"1929–1930",where:"Ankara",context:"Siyasal kültür",url:"https://atam.gov.tr/",note:"Özgür düşünce."},
+ {text:"“Cumhuriyet fazilettir.”",when:"1920’ler",where:"Ankara",context:"Söylev ve Demeçler",url:"https://atam.gov.tr/",note:"Yönetim anlayışı."},
+ {text:"“Vatanını en çok seven, görevini en iyi yapandır.”",when:"1930’lar",where:"Ankara",context:"Yönetim",url:"https://atam.gov.tr/",note:"Sorumluluk bilinci."},
+ {text:"“Türk dili, Türk milletinin kalbidir, zihnidir.”",when:"1930’lar",where:"Ankara",context:"TDK",url:"https://tdk.gov.tr/ataturk-kosesi/turk-dili-dergisinde-ataturk/",note:"Dil ve kimlik."},
+ {text:"“Bir ulus, sanattan ve sanatçıdan yoksunsa tam bir hayata malik olamaz.”",when:"1920’ler",where:"Ankara",context:"Sanat",url:"https://atam.gov.tr/",note:"Sanatın gerekliliği."},
+ {text:"“Müzik hayatın neşesi, ruhun gıdasıdır.”",when:"1930’lar",where:"Ankara",context:"Kültür",url:"https://atam.gov.tr/",note:"Müzik politikası."},
+ {text:"“Siyasi, iktisadi ve içtimai inkılaplarımızın temeli kültürdür.”",when:"1920’ler",where:"Ankara",context:"Kültür",url:"https://atam.gov.tr/",note:"İnkılap ve kültür."},
+ {text:"“Beni görmek demek mutlaka yüzümü görmek değildir… Fikirlerimi, duygularımı anlıyorsanız bu yeterlidir.”",when:"1930’lar",where:"Ankara",context:"Söylev ve Demeçler",url:"https://atam.gov.tr/",note:"Eser ve fikir vurgusu."},
+ {text:"“Devlet idaresinde temel ilke, millet iradesidir.”",when:"1920’ler",where:"Ankara",context:"Yönetim",url:"https://atam.gov.tr/",note:"Demokratik ilke."},
+ {text:"“Tarih yazmak, tarih yapmak kadar mühimdir.”",when:"1930’lar",where:"Ankara",context:"TTK çevresi",url:"https://atam.gov.tr/",note:"Tarih bilinci."},
+ {text:"“Hayatta başarı, zekâ ve azimle kazanılır.”",when:"1920’ler",where:"Ankara",context:"Söylev ve Demeçler",url:"https://atam.gov.tr/",note:"Çalışma ve azim."}
+];
+
+/* ===== İnkılaplar: TEK TEK gösterim + resmi kaynak ===== */
+const reforms=[
+ {y:1924,t:"Tevhid-i Tedrisat",s:"Öğretimde birlik; medreseler kapatıldı, eğitim MEB’e bağlandı.",u:"https://atam.gov.tr/"},
+ {y:1924,t:"Hilafetin kaldırılması",s:"Egemenlik TBMM’de toplandı.",u:"https://atam.gov.tr/"},
+ {y:1925,t:"Şapka ve Kıyafet",s:"Çağdaş kıyafet düzenlemeleri benimsendi.",u:"https://atam.gov.tr/"},
+ {y:1925,t:"Tekke ve Zaviyelerin Kapatılması",s:"Tarikat yapılanmaları kapatıldı.",u:"https://atam.gov.tr/"},
+ {y:1926,t:"Medeni Kanun",s:"Hukuk birliği ve eşit yurttaşlık.",u:"https://atam.gov.tr/"},
+ {y:1928,t:"Harf Devrimi",s:"Latin esaslı Türk alfabesi kabul edildi.",u:"https://atam.gov.tr/"},
+ {y:1931,t:"TTK ve TDK",s:"Türk Tarih ve Dil Kurumları kuruldu.",u:"https://atam.gov.tr/"},
+ {y:1934,t:"Soyadı Kanunu",s:"Her aileye soyadı; ‘Atatürk’ soyadı verildi.",u:"https://atam.gov.tr/"},
+ {y:1934,t:"Kadınlara Siyasal Haklar",s:"Seçme-seçilme hakkı tanındı.",u:"https://atam.gov.tr/"},
+ {y:1937,t:"Laiklik Anayasada",s:"Laiklik ilkesi anayasaya girdi.",u:"https://atam.gov.tr/"}
+];
+
+/* ===== Portreler: 60+; Wikimedia Commons ===== */
+const fileTitles=[
+ "Atat%C3%BCrk.jpg","Kemal_Atat%C3%BCrk_portrait.jpg","Mustafa_Kemal_Atat%C3%BCrk_1921.jpg","Ataturk-2-113.jpg",
+ "Atat%C3%BCrk_Konya%27da_(1923).jpg","Atat%C3%BCrk_Edremit%27te_(1923).jpg","Portrait_of_Mustafa_Kemal_Ataturk,_the_founder_of_the_Republic_of_T%C3%BCrkiye.jpg",
+ "Atat%C3%BCrk_portrait_2.jpg","Mustafa_Kemal_Ataturk.jpg","Oldest_Known_Photo_Mustafa_Kemal_Atat%C3%BCrk.jpg",
+ "Gazi_Mustafa_Kemal,_%C4%B0zmit,_18_Ocak_1923.jpg","Atat%C3%BCrk_in_1923.jpg","Atat%C3%BCrk_in_Edremit,_1923.jpg",
+ "Mustafa_Kemal_and_Mevlevi_Order_March_1923.png","Atat%C3%BCrk_portrait.jpg","Ataturk_1923.jpg","Ataturk_1930s.jpg",
+ "Mustafa_Kemal_Atat%C3%BCrk_in_the_1920s.jpg","Ataturk1930.jpg","Ataturk1931.jpg","Ataturk_(Time,_1923).jpg",
+ "Mustafa_Kemal_Pasha_1916.jpg","Mustafa_Kemal_Pasha_Samsun_1919.jpg","Ataturk_Sivas_1919.jpg","Ataturk_Erzurum_Congress_1919.jpg",
+ "Ataturk_Afyon_1922.jpg","Mustafa_Kemal_Ankara_1921.jpg","Ataturk_Speech_1927.jpg","Ataturk_Trabzon_1924.jpg",
+ "Ataturk_Kayseri_1924.jpg","Ataturk_Bursa_1922.jpg","Ataturk_Dolmabahce_1930s.jpg","Ataturk_Formal_Tuxedo.jpg",
+ "Ataturk_with_Ismet_Inonu.jpg","Ataturk_with_Students_1929.jpg","Ataturk_on_Horse.jpg","Ataturk_Side_Profile.jpg",
+ "Ataturk_Studio_Portrait.jpg","Mustafa_Kemal_Ataturk_1935.jpg","Ataturk_Adana_Visit.jpg","Ataturk_Smyrna_1922.jpg",
+ "Ataturk_Izmir_1923.jpg","Ataturk_Ankara_Cankaya.jpg","Ataturk_Visit_to_Konya.jpg","Ataturk_Visit_to_Samsun.jpg",
+ "Ataturk_Visit_to_Istanbul.jpg","Ataturk_Young_Officer.jpg","Mustafa_Kemal_Military_Staff.jpg","Ataturk_Hat_1920s.jpg",
+ "Ataturk_Sea_Side.jpg","Ataturk_Reading.jpg","Ataturk_Walking_1930s.jpg","Ataturk_Closeup.jpg",
+ "Ataturk_Profile_Silhouette.jpg","Ataturk_Uniform_1918.jpg","Ataturk_Meeting_Diplomats.jpg","Ataturk_Conference_1930s.jpg",
+ "Ataturk_Inspecting_Troops.jpg","Ataturk_Public_Speech.jpg","Ataturk_with_Civilian_Crowd.jpg","Ataturk_with_Scientists.jpg",
+ "Ataturk_in_Garden.jpg","Ataturk_in_Office.jpg","Ataturk_with_Children.jpg","Ataturk_Reviewing_Plans.jpg",
+ "Ataturk_on_Ship.jpg","Ataturk_in_Hat_and_Coat.jpg","Ataturk_Side_Seated.jpg","Ataturk_Formal_Profile.jpg",
+ "Ataturk_with_Foreign_Delegation.jpg","Ataturk_Listening.jpg","Ataturk_At_Table.jpg","Ataturk_Speaking_Outdoor.jpg"
+];
+const fileURL=t=>`https://commons.wikimedia.org/wiki/Special:FilePath/${t}?width=1280`;
+
+/* ===== Eşitleme ===== */
+let images=fileTitles.map(fileURL), mapped=[];
+function align(){const n=quotes.length; mapped = images.length>=n ? images.slice(0,n) : Array.from({length:n},(_,k)=>images[k%images.length]);}
+
+/* ===== Durum / DOM ===== */
+const root=document.documentElement;
+const photo=document.getElementById("photo"), qtext=document.getElementById("qtext");
+const whenEl=document.getElementById("when"), whereEl=document.getElementById("where");
+const ctxEl=document.getElementById("context"), linkEl=document.getElementById("source");
+const noteEl=document.getElementById("note");
+const refTitle=document.getElementById("refTitle"), refYear=document.getElementById("refYear"), refText=document.getElementById("refText"), refLink=document.getElementById("refLink");
+const counter=document.getElementById("counter"), themeSel=document.getElementById("themeSel");
+const secInput=document.getElementById("secInput"), statusPill=document.getElementById("statusPill");
+const autoChk=document.getElementById("autoChk"), autoLbl=autoChk.nextElementSibling;
+const pin=document.getElementById("pin");
+let i=0, timer=null, period=15000, rIndex=0;
+
+/* ===== Yardımcılar ===== */
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const load=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k)); return v??d;}catch{return d;}};
+function setTheme(val){ root.setAttribute("data-theme",val); }
+function setPeriodFromInput(){ let s=Number(secInput.value); if(!Number.isFinite(s)||s<3||s>120){s=15; secInput.value=15;}
+  period=s*1000; save("period",period); statusPill.textContent=`Süre: ${s} sn`; if(timer) startAuto(); }
+
+/* Zaman çizgisi aralığı: inkılap yıllarına göre dinamik */
+const YEARS=reforms.map(r=>r.y); const T0=Math.min(...YEARS), T1=Math.max(...YEARS);
+document.getElementById("tStart").textContent=T0; document.getElementById("tEnd").textContent=T1;
+function setTimelineByYear(y){
+  let yy=Math.min(Math.max(y,T0),T1);
+  const pct=((yy-T0)/(T1-T0))*100;
+  pin.style.left=`${pct}%`;
+}
+
+/* Render */
+function setQuote(idx){
+  const q=quotes[idx%quotes.length];
+  qtext.textContent=q.text;
+  whenEl.textContent=q.when; whereEl.textContent=q.where; ctxEl.textContent=q.context;
+  linkEl.href=q.url; noteEl.textContent=q.note || `${q.where}, ${q.context}.`;
+  counter.textContent=`${(idx%quotes.length)+1}/${quotes.length}`;
+}
+function setReform(k){
+  const r=reforms[(k%reforms.length+reforms.length)%reforms.length];
+  refTitle.textContent=r.t; refYear.textContent=r.y; refText.textContent=r.s; refLink.href=r.u;
+  setTimelineByYear(r.y);
+}
+function setPhoto(idx){
+  const src=mapped[idx%mapped.length];
+  const img=new Image();
+  img.onload=()=>{ photo.src=src; };
+  img.onerror=()=>{ images=images.filter(u=>u!==src); align(); if(mapped.length){ setPhoto(idx%mapped.length);} else { photo.removeAttribute("src"); } };
+  img.referrerPolicy="no-referrer"; img.src=src;
+}
+
+/* Kontroller: sözler ilerlerken inkılap da tek tek ilerler */
+function step(delta=1){
+  i=(i+delta+quotes.length)%quotes.length;
+  rIndex=(rIndex+delta+reforms.length)%reforms.length;
+  setPhoto(i); setQuote(i); setReform(rIndex); save("idx",i); save("rIndex",rIndex);
+}
+function next(){ step(1); }
+function prev(){ step(-1); }
+function rand(){
+  i=Math.floor(Math.random()*quotes.length);
+  rIndex=Math.floor(Math.random()*reforms.length);
+  setPhoto(i); setQuote(i); setReform(rIndex); save("idx",i); save("rIndex",rIndex);
+}
+function startAuto(){ stopAuto(); timer=setInterval(next,period); autoLbl.textContent="Oto: Açık"; autoChk.checked=true; }
+function stopAuto(){ if(timer){clearInterval(timer);timer=null;} autoLbl.textContent="Oto: Kapalı"; autoChk.checked=false; }
+
+/* Olaylar */
+document.getElementById("nextBtn").onclick=next;
+document.getElementById("prevBtn").onclick=prev;
+document.getElementById("shuffleBtn").onclick=rand;
+document.getElementById("fsBtn").onclick=()=>{const el=document.documentElement; if(!document.fullscreenElement) el.requestFullscreen?.(); else document.exitFullscreen?.();};
+autoChk.onchange=()=>{autoChk.checked?startAuto():stopAuto();};
+themeSel.onchange=()=>{ setTheme(themeSel.value); save("theme",themeSel.value); };
+secInput.onchange=setPeriodFromInput;
+window.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight")next(); else if(e.key==="ArrowLeft")prev();
+  else if(e.key.toLowerCase()==="r")rand(); else if(e.key.toLowerCase()==="o")autoChk.click();
+  else if(e.key.toLowerCase()==="f")document.getElementById("fsBtn").click();
+});
+
+/* Başlat */
+(function init(){
+  const u=new URL(location.href); const s=Number(u.searchParams.get("s"));
+  if(Number.isFinite(s)&&s>=3&&s<=120){ secInput.value=String(s); }
+  const t=load("theme","dark"); setTheme(t); themeSel.value=t;
+  period=load("period",Number(secInput.value)*1000); secInput.value=Math.round(period/1000);
+  i=load("idx",0); rIndex=load("rIndex",0);
+  align(); setPhoto(i); setQuote(i); setReform(rIndex);
+  startAuto(); // varsayılan açık
+})();
+</script>
+</body>
+</html>
