@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>İnteraktif Atatürk İlke ve İnkılapları Panosu - Can AKALIN tarafından yapılmıştır.</title>
+<style>
+:root{ --fg:#eaf0f7; --bg:#0b1220; --card:#0f172a; --muted:#9aa4b2; --line:#1f2937; --chip:#0b1326; --accent:#7aa2ff; }
+:root[data-theme="light"]{ --fg:#0e1726; --bg:#f6f7fb; --card:#ffffff; --muted:#445065; --line:#e5e7ef; --chip:#f3f4ff; --accent:#1f3af5; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans",sans-serif;overflow:hidden}
+.wrap{min-height:100%;display:grid;place-items:center;padding:clamp(10px,2vw,24px)}
+.card{
+  width:100%;max-width:1400px;background:var(--card);border:1px solid var(--line);border-radius:16px;
+  box-shadow:0 10px 30px rgba(15,23,42,.08);
+  display:grid;grid-template-rows:auto 1fr auto;min-height:70vh;max-height:90vh;
+}
+.header{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
+.title{font-weight:700;font-size:18px}
+.righthead{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select,input[type="number"]{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:.4rem .6rem;min-width:72px}
+label.small{font-size:12px;color:var(--muted)}
+.counter{font-size:12px;color:var(--muted)}
+.content{
+  display:grid;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  min-height:0;overflow:hidden;
+}
+@media (min-width:1024px){ .content{grid-template-columns:1fr 1.2fr} }
+.left{padding:16px;border-right:1px solid var(--line);display:flex;align-items:center;min-width:0}
+
+.right{
+  padding:clamp(16px,1.5vw,24px);
+  display:grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: clamp(12px, 1.5vh, 16px);
+  min-width:0;
+  overflow:hidden;
+}
+
+.frame{
+  background:var(--bg); border:1px solid var(--line); border-radius:12px; width:100%;
+  display:grid; place-items:center; padding:12px; aspect-ratio:4/3;
+  height:clamp(280px, 65vh, 600px);
+}
+.img{width:100%;height:100%;object-fit:contain;object-position:center;display:block;border-radius:8px}
+
+.qmain{font-size:clamp(20px, 3.2vmin, 32px);line-height:1.3;font-weight:800;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:.5rem 1rem;color:var(--muted);font-size:clamp(12px, 1.6vmin, 14px)}
+.chip{padding:.28rem .6rem;border:1px solid var(--line);border-radius:999px;background:var(--chip)}
+.meta a{color:var(--muted);text-decoration:underline dotted}
+.note{border:1px solid var(--line);background:var(--chip);border-radius:12px;padding:14px}
+.note h2{font-size:14px;color:var(--muted);margin-bottom:8px;font-weight:700}
+.note p{font-size:14px;line-height:1.45;margin:0}
+
+.timeline-container{margin: auto 0;}
+.timeline-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.timeline-title{font-size:16px;font-weight:700;color:var(--muted)}
+.timeline-year{font-size:18px;font-weight:800;color:var(--accent)}
+.timeline-wrapper{position:relative;padding:25px 0}
+
+.timeline-track{position:relative;height:8px;background:linear-gradient(90deg,color-mix(in oklab,var(--line),transparent 50%),color-mix(in oklab,var(--line),var(--accent) 30%),color-mix(in oklab,var(--line),transparent 50%));border-radius:4px;overflow:visible}
+.timeline-marker{position:absolute;top:50%;transform:translate(-50%,-50%);width:18px;height:18px;border-radius:50%;background:var(--card);border:3px solid var(--line);cursor:pointer;transition:all .3s ease;z-index:2}
+.timeline-marker:hover{border-color:var(--accent);transform:translate(-50%,-50%) scale(1.3);box-shadow:0 0 0 6px color-mix(in oklab,var(--accent),transparent 80%)}
+.timeline-marker.active{border-color:var(--accent);background:var(--accent);box-shadow:0 0 0 6px color-mix(in oklab,var(--accent),transparent 70%)}
+.timeline-marker.milestone{border-color:#ff6b6b;background:#ff6b6b}
+.timeline-marker.reform{border-color:#4ecdc4;background:#4ecdc4}
+.timeline-marker.victory{border-color:#96ceb4;background:#96ceb4}
+.timeline-marker.treaty{border-color:#d4a5ff;background:#d4a5ff}
+
+.timeline-label { display: none; }
+
+.timeline-tooltip{
+  position:absolute;
+  bottom:100%;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--card);
+  border:1px solid var(--accent);
+  border-radius:8px;
+  padding:10px 14px;
+  font-size:13px;
+  font-weight: 600;
+  white-space:nowrap;
+  opacity:0;
+  visibility:hidden;
+  transition:all .3s ease;
+  box-shadow:0 6px 20px rgba(0,0,0,0.2);
+  z-index:10;
+  min-width:140px;
+  text-align:center;
+  margin-bottom: 12px;
+}
+
+.timeline-marker:hover .timeline-tooltip{
+  opacity:1;
+  visibility:visible;
+  transform:translateX(-50%) translateY(-8px);
+}
+
+.timeline-era{position:absolute;top:0;height:100%;background:color-mix(in oklab,var(--accent),transparent 92%);border-radius:4px;z-index:1}
+.timeline-era-label{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap;font-weight:600;text-align:center;min-width:80px}
+.timeline-progress{position:absolute;top:0;left:0;height:100%;background:linear-gradient(90deg,var(--accent),color-mix(in oklab,var(--accent),#7aa2ff 50%));border-radius:4px;width:0;transition:width .5s ease;z-index:1}
+
+.reformCard{border:1px solid var(--line);background:var(--chip);border-radius:12px;padding:18px;display:grid;gap:10px;}
+.reformHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.reformTitle{font-weight:800;font-size:clamp(18px, 2vmin, 20px);line-height:1.3}
+.reformYear{background:var(--accent);color:white;padding:6px 10px;border-radius:6px;font-size:14px;font-weight:700;white-space:nowrap}
+.reformDate{color:var(--muted);font-size:13px;margin-top:-4px}
+.reformDetails{margin-top:10px}
+.reformDetailItem{display:flex;gap:8px;margin-bottom:8px;font-size:14px;line-height:1.4}
+.reformDetailIcon{color:var(--accent);font-weight:700;min-width:16px}
+.reformObjectives{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.objectivesTitle{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:8px}
+.objectivesList{display:flex;flex-wrap:wrap;gap:6px}
+.objectiveChip{background:var(--bg);border:1px solid var(--line);padding:5px 9px;border-radius:6px;font-size:11px;line-height:1.2}
+.reformCard a{font-size:12px;color:var(--muted);text-decoration:underline dotted;margin-left:6px}
+
+.controls{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;justify-content:center;padding:16px 20px}
+button,.toggle{border:1px solid var(--line);background:var(--chip);color:var(--fg);padding:.7rem 1.2rem;border-radius:.6rem;cursor:pointer;transition:transform .05s,background .2s;font-size:14px}
+button:hover,.toggle:hover{background:color-mix(in oklab,var(--chip),var(--accent) 15%)} button:active{transform:translateY(1px)}
+.toggle input{display:none} .toggle span{min-width:8ch;text-align:center;display:inline-block}
+.pill{padding:.4rem .8rem;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted);font-size:13px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+body.kiosk .controls,
+body.kiosk .social-links,
+body.kiosk .righthead {
+  display: none;
+}
+
+.fade-out {
+  opacity: 0;
+  transform: translateY(10px);
+}
+#qtext, #photo, .reformCard, .note {
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+}
+
+.social-links{position:fixed;top:16px;right:16px;z-index:999;display:flex;gap:10px;align-items:center}
+.social-link{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;font-size:14px;text-decoration:none;transition:opacity .2s}
+.social-link:hover{opacity:.9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" aria-live="polite">
+    <div class="header">
+      <div class="title">İnteraktif Atatürk İlke ve İnkılapları Panosu - Can AKALIN tarafından yapılmıştır.</div>
+      <div class="righthead">
+        <label class="small">Tema</label>
+        <select id="themeSel" aria-label="Tema"><option value="dark" selected>Koyu</option><option value="light">Açık</option></select>
+        <label class="small">Süre (sn)</label>
+        <input id="secInput" type="number" min="3" max="120" step="1" value="20"/>
+        <div class="counter" id="counter">1/18</div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="left">
+        <div class="frame"><img id="photo" class="img" alt="Tarihi olay görseli" referrerpolicy="no-referrer"/></div>
+      </div>
+      <div class="right">
+        <div>
+           <h1 class="qmain" id="qtext">Yükleniyor…</h1>
+           <div class="meta">
+             <span class="chip" id="when">—</span>
+             <span class="chip" id="where">—</span>
+             <span class="chip" id="context">—</span>
+             <span>· <a id="source" href="#" target="_blank" rel="noopener">Resmî kaynak</a></span>
+           </div>
+        </div>
+        <div class="note" id="noteWrap">
+          <h2>Bağlam açıklaması</h2>
+          <p id="note">Sözün kısa bağlamı burada gösterilir.</p>
+        </div>
+        <div class="timeline-container">
+          <div class="timeline-header">
+            <div class="timeline-title">TÜRK MİLLİ MÜCADELE KRONOLOJİSİ (1919-1938)</div>
+            <div class="timeline-year" id="currentYear">1919</div>
+          </div>
+          <div class="timeline-wrapper">
+            <div class="timeline-track">
+              <div class="timeline-progress" id="timelineProgress"></div>
+              <div class="timeline-era" style="left:0%; width:15%;"><div class="timeline-era-label">MİLLİ MÜCADELE</div></div>
+              <div class="timeline-era" style="left:15%; width:10%;"><div class="timeline-era-label">ZAFER</div></div>
+              <div class="timeline-era" style="left:25%; width:15%;"><div class="timeline-era-label">CUMHURİYET</div></div>
+              <div class="timeline-era" style="left:40%; width:35%;"><div class="timeline-era-label">İNKILAPLAR</div></div>
+              <div class="timeline-era" style="left:75%; width:25%;"><div class="timeline-era-label">MODERN TÜRKİYE</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="reformCard" id="reformCard">
+          <div class="reformHeader">
+            <div>
+              <div class="reformTitle" id="refTitle">Tarihi Olay</div>
+              <div class="reformDate" id="refDate">Tam tarih</div>
+            </div>
+            <div class="reformYear" id="refYear">1919</div>
+          </div>
+          <div class="reformDetails">
+            <div class="reformDetailItem"><span class="reformDetailIcon">•</span><span id="refDetail1"></span></div>
+            <div class="reformDetailItem"><span class="reformDetailIcon">•</span><span id="refDetail2"></span></div>
+            <div class="reformDetailItem"><span class="reformDetailIcon">•</span><span id="refDetail3"></span></div>
+          </div>
+          <div class="reformObjectives">
+            <div class="objectivesTitle">ÖNEMLİ SONUÇLAR</div>
+            <div class="objectivesList" id="refObjectives"></div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--muted)">
+            <a id="refLink" href="#" target="_blank" rel="noopener">Detaylı bilgi için resmî kaynak →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="prevBtn" title="Önceki (←)">Önceki</button>
+      <button id="shuffleBtn" title="Rastgele (R)">Rastgele</button>
+      <button id="nextBtn" title="Sonraki (→)">Sonraki</button>
+      <label class="toggle" title="Otomatik döngü (O)"><input type="checkbox" id="autoChk"/><span>Oto: Açık</span></label>
+      <button id="fsBtn" title="Tam ekran (F)">Tam Ekran</button>
+      <span class="pill" id="statusPill">Süre: 20 sn</span>
+    </div>
+  </div>
+</div>
+<div class="social-links">
+  <a href="https://www.instagram.com/can_akalin" target="_blank" class="social-link">Instagram</a>
+  <a href="mailto:canakalin59@gmail.com" class="social-link">E-posta</a>
+</div>
+
+<script>
+const quotes = [
+  { id: 1, text: "'Milletin bağımsızlığını yine milletin azim ve kararı kurtaracaktır.'", when: "22 Haziran 1919", where: "Amasya", context: "Amasya Genelgesi", url: "https://atam.gov.tr/amasya-genelgesi", note: "Milli Mücadele'nin ilk resmi belgesi olan Amasya Genelgesi, ulusal egemenlik fikrinin temelini atmıştır." },
+  { id: 2, text: "'Ya istiklal, ya ölüm!'", when: "4 Eylül 1919", where: "Sivas", context: "Sivas Kongresi", url: "https://atam.gov.tr/sivas-kongresi", note: "Sivas Kongresi'nde alınan kararlar, Milli Mücadele'nin temel prensiplerini oluşturmuştur." },
+  { id: 3, text: "'Hâkimiyet kayıtsız şartsız milletindir.'", when: "23 Nisan 1920", where: "Ankara", context: "TBMM'nin Açılışı", url: "https://tbmm.gov.tr/tarihce/kurulus.htm", note: "TBMM'nin açılışında benimsenen bu ilke, Osmanlı'nın monarşik yapısından cumhuriyete geçişin temel taşıdır." },
+  { id: 4, text: "'Hattı müdafaa yoktur, sathı müdafaa vardır. O satıh, bütün vatandır.'", when: "26 Ağustos 1921", where: "Sakarya", context: "Sakarya Meydan Muharebesi", url: "https://atam.gov.tr/sakarya-meydan-muharebesi", note: "Bu emir, savaşın seyrini değiştirmiş ve topyekûn bir savunma anlayışını ortaya koymuştur." },
+  { id: 5, text: "'Ordular! İlk hedefiniz Akdeniz'dir. İleri!'", when: "1 Eylül 1922", where: "Dumlupınar", context: "Başkomutanlık Meydan Muharebesi", url: "https://atam.gov.tr/buyuk-taarruz", note: "26 Ağustos'ta başlayan Büyük Taarruz'un zaferle sonuçlandığı bu emir, Türk ordusunun İzmir'e doğru ilerleyişini başlatmıştır." },
+  { id: 6, text: "'Efendiler, yarın Cumhuriyeti ilan edeceğiz.'", when: "28 Ekim 1923", where: "Ankara, Çankaya", context: "Cumhuriyet'in İlanı Öncesi", url: "https://atam.gov.tr/cumhuriyetin-ilanı", note: "Akşam yemeğinde yakın arkadaşlarına söylediği bu söz, tarihi kararın habercisi olmuştur." },
+  { id: 7, text: "'Benim naçiz vücudum, bir gün elbet toprak olacaktır. Fakat Türkiye Cumhuriyeti, ilelebet payidar kalacaktır.'", when: "1926", where: "Ankara", context: "İzmir Suikastı Girişimi Sonrası", url: "https://www.anitkabir.tsk.tr/atalarimizin_sozleri/sozler.html", note: "Kendisine yönelik suikast girişimi sonrası Anadolu Ajansı'na verdiği demeçte, cumhuriyetin bekasının kişilerden daha önemli olduğunu vurgulamıştır." },
+  { id: 8, text: "Gençliğe Hitabe: 'Ey Türk gençliği! Birinci vazifen; Türk istiklâlini, Türk Cumhuriyetini, ilelebet, muhafaza ve müdafaa etmektir.'", when: "20 Ekim 1927", where: "Ankara", context: "Nutuk'un Sonu", url: "https://atam.gov.tr/nutuk", note: "Nutuk, 15-20 Ekim 1927 tarihlerinde CHP'nin 2. Kurultayı'nda okunmuştur. 36.5 saat süren bu tarihi konuşma, Türk Kurtuluş Savaşı'nın ve Cumhuriyet'in kuruluşunun resmi belgesidir." },
+  { id: 9, text: "'Hayatta en hakiki mürşit ilimdir, fendir.'", when: "22 Eylül 1924", where: "Samsun", context: "Samsun Öğretmenlerine Konuşma", url: "https://www.atam.gov.tr/ataturkun-soylev-ve-demecleri/samsun-idadi-sinde-ogretmen-ve-ogrencilerle-konusma", note: "Cumhuriyetin temelinin kültür ve bilim olduğunu vurgulayan bu söz, eğitim ve aydınlanma devriminin sloganı olmuştur." },
+  { id: 10, text: "'Ne mutlu Türk'üm diyene!'", when: "29 Ekim 1933", where: "Ankara", context: "10. Yıl Nutku", url: "https://atam.gov.tr/10-yil-nutku", note: "Cumhuriyet'in 10. yılında Ankara Hipodromu'nda yüz binlerce vatandaşın önünde okunan bu nutuk, Türk milletinin başarılarını ve hedeflerini özetlemektedir." },
+  { id: 11, text: "'Yurtta sulh, cihanda sulh.'", when: "20 Nisan 1931", where: "Ankara", context: "Seçim Beyannamesi", url: "https://www.atam.gov.tr/ataturkun-dis-politikasi", note: "Türkiye Cumhuriyeti'nin temel dış politika ilkesi olan bu söz, hem ulusal barışı hem de uluslararası barışı hedeflemektedir." }
+];
+
+// GÜNCELLENDİ: Kullanıcının verdiği URL'ler ile dolduruldu
+const historicalEvents = [
+  { y: 1919, date: "19 Mayıs 1919", t: "Samsun'a Çıkış", details: ["Mustafa Kemal Paşa, Bandırma Vapuru ile Samsun'a ayak bastı", "Milli Mücadele'nin fiili başlangıcı kabul edilen tarihi olay", "9. Ordu Müfettişi olarak görevlendirilmişti"], objectives: ["Milli Mücadele", "Örgütlenme", "Direniş"], type: "milestone", u: "https://atam.gov.tr/samsuna-cikis", quoteId: 1, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/f/fc/Band%C4%B1rma_Vapuru.png" },
+  { y: 1919, date: "22 Haziran 1919", t: "Amasya Genelgesi", details: ["Milli Mücadele'nin ilk resmi belgesi yayınlandı", "'Milletin bağımsızlığını milletin azmi kurtaracaktır' ilkesi benimsendi", "Erzurum ve Sivas'ta kongreler toplanması kararlaştırıldı"], objectives: ["Resmi Bildiri", "Ulusal Egemenlik", "Kongreler"], type: "milestone", u: "https://atam.gov.tr/amasya-genelgesi", quoteId: 1, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Amasya_Genelgesi.pdf/page1-409px-Amasya_Genelgesi.pdf.jpg" },
+  { y: 1919, date: "23 Temmuz 1919", t: "Erzurum Kongresi", details: ["'Vatan bir bütündür, parçalanamaz' kararı alındı", "Manda ve himaye ilk kez reddedildi", "Temsil Kurulu oluşturuldu, başkanlığına Mustafa Kemal seçildi"], objectives: ["Bölgesel Kongre", "Vatan Bütünlüğü", "Manda Reddi"], type: "milestone", u: "https://atam.gov.tr/erzurum-kongresi", quoteId: 2, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/8/87/Mustafa_Kemal_Pa%C5%9Fa%2C_Erzurum%2C_5_Temmuz_1919.png" },
+  { y: 1919, date: "4 Eylül 1919", t: "Sivas Kongresi", details: ["Tüm yurttan delegeler katıldı", "Anadolu ve Rumeli Müdafaa-i Hukuk Cemiyeti kuruldu", "Manda fikri kesin olarak reddedildi"], objectives: ["Ulusal Kongre", "Cemiyet Birliği", "Milli İrade"], type: "milestone", u: "https://atam.gov.tr/sivas-kongresi", quoteId: 2, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d0/Mustafa_Kemal_Ataturk_1919_Sivas_Congress_%28cropped%29.jpg" },
+  { y: 1920, date: "23 Nisan 1920", t: "TBMM'nin Açılışı", details: ["Yeni Türk devletinin temelleri atıldı", "Egemenlik kayıtsız şartsız millete verildi", "Milli iradeyi temsil eden tek organ oldu"], objectives: ["Meclis Açılışı", "Ulusal Egemenlik", "Yeni Devlet"], type: "milestone", u: "https://tbmm.gov.tr/tarihce/kurulus.htm", quoteId: 3, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/e/e9/Mustafa_Kemal_Pasha_in_the_Turkish_Grand_National_Assembly%2C_1_March_1921.jpg" },
+  { y: 1921, date: "23 Ağustos 1921", t: "Sakarya Meydan Muharebesi", details: ["22 gün 22 gece süren tarihi muharebe", "Mustafa Kemal 'Hattı müdafaa yoktur, sathı müdafaa vardır' dedi", "Mustafa Kemal'e 'Gazi' unvanı ve 'Mareşal' rütbesi verildi"], objectives: ["Meydan Muharebesi", "Savunma Zaferi", "Dönüm Noktası"], type: "victory", u: "https://atam.gov.tr/sakarya-meydan-muharebesi", quoteId: 4, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Battle_of_Sakarya_1921.jpg"},
+  { y: 1922, date: "26 Ağustos 1922", t: "Büyük Taarruz", details: ["Kocatepe'den başlayan tarihi taarruz", "30 Ağustos'ta Başkomutanlık Meydan Muharebesi kazanıldı", "Mustafa Kemal 'Ordular! İlk hedefiniz Akdeniz'dir, ileri!' emrini verdi"], objectives: ["Taarruz", "Zafer", "Kurtuluş"], type: "victory", u: "https://atam.gov.tr/buyuk-taarruz", quoteId: 5, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/b/b6/Atat%C3%BCrk_in_target_practice%2C_1922.jpg" },
+  { y: 1922, date: "9 Eylül 1922", t: "İzmir'in Kurtuluşu", details: ["Türk ordusu İzmir'e girdi", "Yunan işgali sona erdi", "Kurtuluş Savaşı'nın askeri safhası tamamlandı"], objectives: ["Şehir Kurtuluşu", "İşgal Sonu", "Askeri Zafer"], type: "victory", u: "https://atam.gov.tr/izmirin-kurtulusu", quoteId: 5, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4c/The_Turkish_Army%27s_entry_into_Izmir.jpg" },
+  { y: 1922, date: "1 Kasım 1922", t: "Saltanatın Kaldırılması", details: ["Osmanlı saltanatı tarihe karıştı", "Milli egemenlik ilkesi kesinleşti", "Lozan görüşmelerinde Türkiye'yi tek temsilci temsil etti"], objectives: ["Milli Egemenlik", "Tek Temsil", "Laiklik"], type: "reform", u: "https://atam.gov.tr/saltanatin-kaldirilmasi", quoteId: 6, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Sultanvahideddin.jpg" },
+  { y: 1923, date: "24 Temmuz 1923", t: "Lozan Antlaşması", details: ["Yeni Türk devletinin uluslararası alanda tanınması sağlandı", "Sevr Antlaşması geçersiz kılındı", "Türkiye'nin bağımsızlığı tüm dünyaca kabul edildi"], objectives: ["Uluslararası Tanınma", "Bağımsızlık", "Egemenlik"], type: "treaty", u: "https://atam.gov.tr/lozan-antlasmasi", quoteId: 6, imgUrl: "https://upload.wikimedia.org/wikipedia/tr/7/75/L%27Illustr%C3%A9%27_dergi_2_A%C4%9Fu_1923_kapak.jpg" },
+  { y: 1923, date: "29 Ekim 1923", t: "Cumhuriyet'in İlanı", details: ["Türkiye Cumhuriyeti resmen ilan edildi", "Mustafa Kemal Paşa ilk cumhurbaşkanı seçildi", "Devletin yönetim şekli kesinleşti"], objectives: ["Cumhuriyet İlanı", "Yeni Devlet", "Yönetim Sistemi"], type: "milestone", u: "https://atam.gov.tr/cumhuriyetin-ilanı", quoteId: 6, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/7/77/1923_11_03_Resimli_Gazete_Cumhuriyetin_Ilani.jpg" },
+  { y: 1924, date: "3 Mart 1924", t: "Tevhid-i Tedrisat Kanunu", details: ["Tüm eğitim kurumları Milli Eğitim Bakanlığı'na bağlandı", "Medreseler kapatıldı, laik eğitim sistemine geçildi", "Eğitimde birlik sağlandı"], objectives: ["Eğitim Birliği", "Laik Eğitim", "Modern Eğitim"], type: "reform", u: "https://atam.gov.tr/tevhid-i-tedrisat-kanunu", quoteId: 9, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/e/e1/Sivas_Turkish_alphabet.jpg" },
+  { y: 1925, date: "25 Kasım 1925", t: "Şapka ve Kıyafet İnkılabı", details: ["Fes yasaklandı, şapka giyilmesi zorunlu hale getirildi", "Çağdaş ve modern bir görünüm hedeflendi", "Toplumsal alanda Batılılaşma adımı atıldı"], objectives: ["Çağdaş Görünüm", "Medeniyet", "Modernleşme"], type: "reform", u: "https://atam.gov.tr/sapka-inkilabi", quoteId: 7, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/d/d9/Ataturk-hatreform.jpg" },
+  { y: 1928, date: "1 Kasım 1928", t: "Harf Devrimi", details: ["Arap alfabesi yerine Latin esaslı Türk alfabesi kabul edildi", "Millet Mektepleri açılarak okuma-yazma seferberliği başlatıldı", "Okur-yazar oranı hızla arttı"], objectives: ["Okur-yazarlık", "Modern Alfabe", "Kültür Birliği"], type: "reform", u: "https://atam.gov.tr/harf-inkilabi", quoteId: 9, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/0/0d/T%C3%BCrk_Dil_Devrimi%2C_1928_%28Turkish_Language_Revolution%29.jpg" },
+  { y: 1933, date: "29 Ekim 1933", t: "Onuncu Yıl Nutku", details:["Cumhuriyet'in 10. yılı kutlamaları için okundu", "Geçen 10 yılın değerlendirmesi yapıldı", "Gelecek için hedefler belirlendi"], objectives:["Ulusal Birlik", "Başarı Vurgusu", "Gelecek Vizyonu"], type: "milestone", u:"https://atam.gov.tr/10-yil-nutku", quoteId: 10, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/8/86/Atat%C3%BCrk_during_the_10th_Anniversary_Speech.jpg"},
+  { y: 1934, date: "5 Aralık 1934", t: "Kadınlara Seçme ve Seçilme Hakkı", details: ["Türk kadınına milletvekili seçme ve seçilme hakkı tanındı", "Birçok Avrupa ülkesinden önce bu hak verildi", "Toplumsal cinsiyet eşitliği konusunda tarihi adım atıldı"], objectives: ["Kadın Hakları", "Siyasi Eşitlik", "Demokratikleşme"], type: "reform", u: "https://atam.gov.tr/kadin-haklari", quoteId: 10, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/4/43/First_female_MPs_of_the_Turkish_Parliament_%281935%29.jpg" },
+  { y: 1937, date: "5 Şubat 1937", t: "Laiklik İlkesinin Anayasaya Girmesi", details: ["Laiklik ilkesi Anayasa'nın 2. maddesinde yer aldı", "Devletin dini İslam'dır hükmü kaldırıldı", "Laik, demokratik ve sosyal hukuk devleti temelleri güçlendirildi"], objectives: ["Laik Devlet", "Anayasal Güvence", "Demokratik Sistem"], type: "reform", u: "https://atam.gov.tr/laiklik-ilkeleri", quoteId: 11, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/b/b7/Atat%C3%BCrk_CHP%27nin_4._Kurultay%27%C4%B1nda_%289_May%C4%B1s_1935%29.jpg" },
+  { y: 1938, date: "10 Kasım 1938", t: "Atatürk'ün Vefatı", details:["Türkiye Cumhuriyeti'nin kurucusu vefat etti", "Dolmabahçe Sarayı'nda hayata gözlerini yumdu", "Naaşı Anıtkabir'e defnedildi"], objectives:["Ulusal Yas", "Miras", "Anma"], type: "milestone", u:"https://www.anitkabir.tsk.tr/tarihcesi.html", quoteId: 7, imgUrl: "https://upload.wikimedia.org/wikipedia/commons/5/5d/Atat%C3%BCrk%27%C3%BCn_cenazesi.png" }
+];
+
+const ataturkPortraits=["https://www.anitkabir.tsk.tr/images/ataturk_resimleri/diger/50.jpg", "https://www.anitkabir.tsk.tr/images/ataturk_resimleri/diger/36.jpg", "https://www.anitkabir.tsk.tr/images/ataturk_resimleri/diger/35.jpg", "https://www.anitkabir.tsk.tr/images/ataturk_resimleri/diger/29.jpg"];
+
+const doc = document;
+const root = doc.documentElement;
+const photoEl = doc.getElementById("photo"), qtextEl = doc.getElementById("qtext");
+const whenEl = doc.getElementById("when"), whereEl = doc.getElementById("where");
+const ctxEl = doc.getElementById("context"), linkEl = doc.getElementById("source");
+const noteEl = doc.getElementById("note");
+const refTitle = doc.getElementById("refTitle"), refDate = doc.getElementById("refDate"), refYear = doc.getElementById("refYear");
+const refDetail1 = doc.getElementById("refDetail1"), refDetail2 = doc.getElementById("refDetail2"), refDetail3 = doc.getElementById("refDetail3");
+const refObjectives = doc.getElementById("refObjectives"), refLink = doc.getElementById("refLink");
+const counter = doc.getElementById("counter"), themeSel = doc.getElementById("themeSel");
+const secInput = doc.getElementById("secInput"), statusPill = doc.getElementById("statusPill");
+const autoChk = doc.getElementById("autoChk"), autoLbl = autoChk.nextElementSibling;
+
+let eventIndex = 0;
+let timer = null, period = 20000;
+let isKioskMode = false;
+let advancedTimeline;
+
+const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } };
+
+function updateContent(index) {
+    const contentElements = [photoEl, qtextEl, doc.getElementById('reformCard'), doc.getElementById('noteWrap')];
+    contentElements.forEach(el => el.classList.add('fade-out'));
+
+    setTimeout(() => {
+        const event = historicalEvents[index];
+        const quote = quotes.find(q => q.id === event.quoteId) || quotes[0];
+        
+        refTitle.textContent = event.t;
+        refDate.textContent = event.date;
+        refYear.textContent = event.y;
+        refDetail1.textContent = event.details[0] || "";
+        refDetail2.textContent = event.details[1] || "";
+        refDetail3.textContent = event.details[2] || "";
+        refObjectives.innerHTML = "";
+        event.objectives.forEach(obj => {
+            const chip = doc.createElement("span");
+            chip.className = "objectiveChip";
+            chip.textContent = obj;
+            refObjectives.appendChild(chip);
+        });
+        refLink.href = event.u;
+
+        qtextEl.textContent = quote.text;
+        whenEl.textContent = quote.when;
+        whereEl.textContent = quote.where;
+        ctxEl.textContent = quote.context;
+        linkEl.href = quote.url;
+        noteEl.textContent = quote.note;
+
+        const imageUrl = event.imgUrl || ataturkPortraits[index % ataturkPortraits.length];
+        setPhoto(imageUrl, index);
+
+        if (advancedTimeline) advancedTimeline.updateTimeline(event);
+        
+        counter.textContent = `${index + 1}/${historicalEvents.length}`;
+        contentElements.forEach(el => el.classList.remove('fade-out'));
+
+    }, 500);
+}
+
+function setPhoto(src, index) {
+    const img = new Image();
+    img.onload = () => { photoEl.src = src; };
+    img.onerror = () => {
+        photoEl.src = ataturkPortraits[index % ataturkPortraits.length];
+    };
+    img.referrerPolicy = "no-referrer";
+    img.src = src;
+}
+
+function step(delta = 1) {
+    eventIndex = (eventIndex + delta + historicalEvents.length) % historicalEvents.length;
+    updateContent(eventIndex);
+    save("eventIndex", eventIndex);
+}
+const next = () => step(1);
+const prev = () => step(-1);
+function rand() {
+    eventIndex = Math.floor(Math.random() * historicalEvents.length);
+    updateContent(eventIndex);
+    save("eventIndex", eventIndex);
+}
+
+function startAuto() { stopAuto(); timer = setInterval(next, period); autoLbl.textContent = "Oto: Açık"; autoChk.checked = true; }
+function stopAuto() { if (timer) clearInterval(timer); timer = null; autoLbl.textContent = "Oto: Kapalı"; autoChk.checked = false; }
+
+class AdvancedTimeline {
+  constructor() {
+    this.track = doc.querySelector('.timeline-track');
+    this.progress = doc.getElementById('timelineProgress');
+    this.currentYear = doc.getElementById('currentYear');
+    this.markers = [];
+    this.T0 = 1919; this.T1 = 1938;
+    this.init();
+  }
+  init() {
+    historicalEvents.forEach((event, index) => { this.createMarker(event, index); });
+  }
+  createMarker(event, index) {
+    const position = ((event.y - this.T0) / (this.T1 - this.T0)) * 100;
+    const marker = doc.createElement('div');
+    marker.className = `timeline-marker ${event.type}`;
+    marker.style.left = `${position}%`;
+    marker.dataset.index = index;
+        
+    const tooltip = doc.createElement('div');
+    tooltip.className = 'timeline-tooltip';
+    tooltip.innerHTML = `<strong>${event.y}</strong><br>${event.t}`;
+    
+    marker.append(tooltip);
+    marker.addEventListener('click', () => {
+        eventIndex = parseInt(marker.dataset.index);
+        updateContent(eventIndex);
+        save("eventIndex", eventIndex);
+    });
+    this.track.appendChild(marker);
+    this.markers.push(marker);
+  }
+  updateTimeline(currentEvent) {
+    const position = ((currentEvent.y - this.T0) / (this.T1 - this.T0)) * 100;
+    this.progress.style.width = `${position}%`;
+    this.currentYear.textContent = currentEvent.y;
+    
+    this.markers.forEach(marker => {
+      marker.classList.remove('active');
+      const eventOnMarker = historicalEvents[parseInt(marker.dataset.index)];
+      if (eventOnMarker.t === currentEvent.t && eventOnMarker.date === currentEvent.date) {
+        marker.classList.add('active');
+      }
+    });
+  }
+}
+
+doc.getElementById("nextBtn").onclick = next;
+doc.getElementById("prevBtn").onclick = prev;
+doc.getElementById("shuffleBtn").onclick = rand;
+doc.getElementById("fsBtn").onclick = () => { if (!doc.fullscreenElement) root.requestFullscreen?.(); else doc.exitFullscreen?.(); };
+autoChk.onchange = () => { autoChk.checked ? startAuto() : stopAuto(); };
+themeSel.onchange = () => { root.setAttribute("data-theme", themeSel.value); save("theme", themeSel.value); };
+secInput.onchange = () => {
+    let s = Number(secInput.value);
+    if (!Number.isFinite(s) || s < 3 || s > 120) s = 20;
+    secInput.value = s;
+    period = s * 1000;
+    save("period", period);
+    statusPill.textContent = `Süre: ${s} sn`;
+    if (timer) startAuto();
+};
+window.addEventListener("keydown", e => {
+    if (e.target.tagName === 'INPUT') return;
+    const keyMap = {'ArrowRight': next, 'ArrowLeft': prev, 'r': rand, 'R': rand, 'f': () => doc.getElementById("fsBtn").click(), 'F': () => doc.getElementById("fsBtn").click(), 'o': () => autoChk.click(), 'O': () => autoChk.click()};
+    if (keyMap[e.key]) keyMap[e.key]();
+});
+
+(function init() {
+    const params = new URL(location.href).searchParams;
+    isKioskMode = params.get("kiosk") === "true";
+    if (isKioskMode) {
+        doc.body.classList.add("kiosk");
+        setTimeout(() => { location.reload(); }, 24 * 60 * 60 * 1000);
+    }
+    
+    const savedTheme = load("theme", "dark");
+    root.setAttribute("data-theme", savedTheme);
+    themeSel.value = savedTheme;
+
+    const savedPeriod = load("period", 20000);
+    period = savedPeriod;
+    secInput.value = Math.round(period / 1000);
+    statusPill.textContent = `Süre: ${secInput.value} sn`;
+
+    eventIndex = load("eventIndex", 0);
+    
+    advancedTimeline = new AdvancedTimeline();
+    updateContent(eventIndex);
+    
+    startAuto();
+})();
+</script>
+</body>
+</html>
